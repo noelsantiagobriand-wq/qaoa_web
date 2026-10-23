@@ -28,12 +28,6 @@ st.markdown(
     "Compare a greedy heuristic, QAOA, and an exact classical solver "
     "on the **same graph instances**."
 )
-st.info(
-    "Scoring convention: crossing edges contribute −weight and uncut edges "
-    "contribute +weight. **Lower signed scores are better.** The exact solver "
-    "provides the optimum reference. QAOA runs on a classical simulator, "
-    "so this app compares solution quality—not quantum hardware speedup."
-)
 
 with st.sidebar:
     st.header("Experiment settings")
@@ -254,10 +248,6 @@ if df is None:
         f"**{graph_instances} graph instances**, **{restarts} QAOA restarts per graph**, "
         f"**p={p}**, **{shots} shots**."
     )
-    st.caption(
-        "The exact solver enumerates all non-equivalent partitions. At 20 vertices, "
-        "that is 2^19 partitions per graph; the app may take longer for larger batches."
-    )
 else:
     st.subheader("Experiment summary")
     total = len(df)
@@ -280,7 +270,6 @@ else:
     st.bar_chart(score_summary)
 
     st.markdown("### Per-graph results")
-    st.caption("Lower signed scores are better. A gap of 0 means the algorithm reached the exact optimum.")
     visible_cols = [
         "graph_seed", "edges", "optimum_score", "greedy_score", "greedy_gap",
         "qaoa_best_score", "qaoa_gap", "qaoa_mean_restart_score",
