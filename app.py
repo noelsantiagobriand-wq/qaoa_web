@@ -258,7 +258,6 @@ else:
         for cut, optimum in zip(df["qaoa_best_cut_size"], df["optimum_cut_size"])
     ]
     c2.metric("Mean percentage of optimum", f"{sum(qaoa_percentages) / len(qaoa_percentages):.1f}%")    
-    c3.metric("Greedy reached optimum", f"{100 * df['greedy_optimal'].mean():.1f}%")
     c4.metric("Total runtime", f"{st.session_state.experiment_elapsed:.1f} s")
     
     st.subheader("Partitions — first graph")
