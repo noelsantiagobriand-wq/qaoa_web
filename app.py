@@ -257,7 +257,12 @@ else:
         100 * cut / optimum if optimum > 0 else 100
         for cut, optimum in zip(df["qaoa_best_cut_size"], df["optimum_cut_size"])
     ]
-    c2.metric("Mean percentage of optimum", f"{sum(qaoa_percentages) / len(qaoa_percentages):.1f}%")    
+    greedy_percentages = [
+        100 * cut / optimum if optimum > 0 else 100
+        for cut, optimum in zip(df["greedy_best_cut_size"], df["optimum_cut_size"])
+    ]    
+    c2.metric("QAOA Mean percentage of optimum", f"{sum(qaoa_percentages) / len(qaoa_percentages):.1f}%")    
+    c3.metric("greedy Mean percentage of optimum", f"{sum(greedy_percentages) / len(greedy_percentages):.1f}%")    
     c4.metric("Total runtime", f"{st.session_state.experiment_elapsed:.1f} s")
     
     st.subheader("Partitions — first graph")
