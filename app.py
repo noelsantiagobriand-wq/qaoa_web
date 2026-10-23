@@ -80,7 +80,7 @@ def draw_graph(graph, partition=None, title=None):
             "#4c78a8" if partition[node] == 0 else "#f28e2b"
             for node in graph.nodes()
         ]
-    fig, ax = plt.subplots(figsize=(7, 5))
+    fig, ax = plt.subplots(figsize=(10, 5))
     nx.draw_networkx(
         graph,
         pos,
@@ -253,9 +253,40 @@ else:
     total = len(df)
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Graphs tested", total)
-    c2.metric("QAOA reached optimum", f"{100 * df['qaoa_optimal'].mean():.1f}%")
-    c3.metric("Greedy reached optimum", f"{100 * df['greedy_optimal'].mean():.1f}%")
+    qaoa_percentages = [
+        100 * cut / optimum if optimum > 0 else 100
+        for cut, optimum in zip(df["qaoa_best_cut_size"], df["optimum_cut_size"])
+    ]
+    c2.metric("Mean percentage of optimum", f"{sum(qaoa_percentages) / len(qaoa_percentages):.1f}%")    c3.metric("Greedy reached optimum", f"{100 * df['greedy_optimal'].mean():.1f}%")
     c4.metric("Total runtime", f"{st.session_state.experiment_elapsed:.1f} s")
+    
+    st.subheader("Partitions — first graph")
+    if st.session_state.sample_graph is not None:
+        graph = st.session_state.sample_graph
+        tabs = st.tabs(["Graph", "Exact classical", "Greedy", "QAOA best"])
+        with tabs[0]:
+            st.pyplot(draw_graph(graph), clear_figure=True)
+            st.write(f"Edges: {list(graph.edges())}")
+        sample_map = st.session_state.sample_partitions
+        for tab, name in zip(tabs[1:], ["Exact classical", "Greedy", "QAOA (best restart)"]):
+            with tab:
+                part = sample_map[name]
+                score = calculate_cut_value(graph, part)
+                cut_size = actual_cut_size(graph, part)
+                st.pyplot(draw_graph(graph, part, f"{name} · signed score {score:g}"), clear_figure=True)
+                st.write(f"Signed score: **{score:g}** · Cut size: **{cut_size:g}**")
+                st.write(partition_text(part))
+                
+    if "show_other_graphs" not in st.session_state:
+        st.session_state.show_other_graphs = False
+    
+    if st.button(
+        "Hide other graphs" if st.session_state.show_other_graphs
+        else "Show other graphs",
+        use_container_width=True,
+    ):
+        st.session_state.show_other_graphs = not st.session_state.show_other_graphs
+    
 
     st.markdown("### Average signed score by algorithm")
     score_summary = pd.DataFrame({
@@ -280,23 +311,6 @@ else:
     st.markdown("### Optimum gaps")
     gap_df = df[["graph_seed", "greedy_gap", "qaoa_gap"]].set_index("graph_seed")
     st.line_chart(gap_df)
-
-    st.markdown("### First graph: partitions")
-    if st.session_state.sample_graph is not None:
-        graph = st.session_state.sample_graph
-        tabs = st.tabs(["Graph", "Exact classical", "Greedy", "QAOA best"])
-        with tabs[0]:
-            st.pyplot(draw_graph(graph), clear_figure=True)
-            st.write(f"Edges: {list(graph.edges())}")
-        sample_map = st.session_state.sample_partitions
-        for tab, name in zip(tabs[1:], ["Exact classical", "Greedy", "QAOA (best restart)"]):
-            with tab:
-                part = sample_map[name]
-                score = calculate_cut_value(graph, part)
-                cut_size = actual_cut_size(graph, part)
-                st.pyplot(draw_graph(graph, part, f"{name} · signed score {score:g}"), clear_figure=True)
-                st.write(f"Signed score: **{score:g}** · Cut size: **{cut_size:g}**")
-                st.write(partition_text(part))
 
     st.markdown("### Download results")
     csv_bytes = df.to_csv(index=False).encode("utf-8")
