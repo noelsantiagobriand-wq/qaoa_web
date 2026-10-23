@@ -286,49 +286,48 @@ else:
         use_container_width=True,
     ):
         st.session_state.show_other_graphs = not st.session_state.show_other_graphs
+    if st.session_state.show_other_graphs:
+        st.markdown("### Average signed score by algorithm")
+        score_summary = pd.DataFrame({
+            "Algorithm": ["Exact classical", "Greedy", "QAOA (best of restarts)", "QAOA (mean restart)"],
+            "Mean signed score": [
+                df["optimum_score"].mean(),
+                df["greedy_score"].mean(),
+                df["qaoa_best_score"].mean(),
+                df["qaoa_mean_restart_score"].mean(),
+            ],
+        }).set_index("Algorithm")
+        st.bar_chart(score_summary)
     
-
-    st.markdown("### Average signed score by algorithm")
-    score_summary = pd.DataFrame({
-        "Algorithm": ["Exact classical", "Greedy", "QAOA (best of restarts)", "QAOA (mean restart)"],
-        "Mean signed score": [
-            df["optimum_score"].mean(),
-            df["greedy_score"].mean(),
-            df["qaoa_best_score"].mean(),
-            df["qaoa_mean_restart_score"].mean(),
-        ],
-    }).set_index("Algorithm")
-    st.bar_chart(score_summary)
-
-    st.markdown("### Per-graph results")
-    visible_cols = [
-        "graph_seed", "edges", "optimum_score", "greedy_score", "greedy_gap",
-        "qaoa_best_score", "qaoa_gap", "qaoa_mean_restart_score",
-        "greedy_runtime_seconds", "qaoa_mean_runtime_seconds", "exact_runtime_seconds",
-    ]
-    st.dataframe(df[visible_cols], use_container_width=True, hide_index=True)
-
-    st.markdown("### Optimum gaps")
-    gap_df = df[["graph_seed", "greedy_gap", "qaoa_gap"]].set_index("graph_seed")
-    st.line_chart(gap_df)
-
-    st.markdown("### Download results")
-    csv_bytes = df.to_csv(index=False).encode("utf-8")
-    st.download_button(
-        "Download graph-level results CSV",
-        data=csv_bytes,
-        file_name="qaoa_maxcut_results.csv",
-        mime="text/csv",
-    )
-    if st.session_state.get("run_details") is not None:
-        run_csv = st.session_state.run_details.to_csv(index=False).encode("utf-8")
+        st.markdown("### Per-graph results")
+        visible_cols = [
+            "graph_seed", "edges", "optimum_score", "greedy_score", "greedy_gap",
+            "qaoa_best_score", "qaoa_gap", "qaoa_mean_restart_score",
+            "greedy_runtime_seconds", "qaoa_mean_runtime_seconds", "exact_runtime_seconds",
+        ]
+        st.dataframe(df[visible_cols], use_container_width=True, hide_index=True)
+    
+        st.markdown("### Optimum gaps")
+        gap_df = df[["graph_seed", "greedy_gap", "qaoa_gap"]].set_index("graph_seed")
+        st.line_chart(gap_df)
+    
+        st.markdown("### Download results")
+        csv_bytes = df.to_csv(index=False).encode("utf-8")
         st.download_button(
-            "Download every QAOA restart CSV",
-            data=run_csv,
-            file_name="qaoa_maxcut_restart_results.csv",
+            "Download graph-level results CSV",
+            data=csv_bytes,
+            file_name="qaoa_maxcut_results.csv",
             mime="text/csv",
         )
-
+        if st.session_state.get("run_details") is not None:
+            run_csv = st.session_state.run_details.to_csv(index=False).encode("utf-8")
+            st.download_button(
+                "Download every QAOA restart CSV",
+                data=run_csv,
+                file_name="qaoa_maxcut_restart_results.csv",
+                mime="text/csv",
+            )
+    
 st.divider()
 st.caption(
     "Methods: the greedy heuristic follows the project's node-order assignment and tie-break rule; "
