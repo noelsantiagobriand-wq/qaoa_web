@@ -259,7 +259,7 @@ else:
     ]
     greedy_percentages = [
         100 * cut / optimum if optimum > 0 else 100
-        for cut, optimum in zip(df["greedy_best_cut_size"], df["optimum_cut_size"])
+        for cut, optimum in zip(df["greedy_cut_size"], df["optimum_cut_size"])
     ]    
     c2.metric("QAOA Mean percentage of optimum", f"{sum(qaoa_percentages) / len(qaoa_percentages):.1f}%")    
     c3.metric("greedy Mean percentage of optimum", f"{sum(greedy_percentages) / len(greedy_percentages):.1f}%")    
